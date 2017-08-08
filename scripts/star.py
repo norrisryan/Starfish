@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3 
 
 # All of the argument parsing is done in the `parallel.py` module.
 
@@ -7,6 +7,7 @@ import Starfish
 from Starfish import parallel
 from Starfish.parallel import args
 from Starfish.model import ThetaParam, PhiParam
+print("TESTING")
 
 if args.generate:
     model = parallel.OptimizeTheta(debug=True)

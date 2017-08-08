@@ -1,11 +1,11 @@
 # YAML configuration script
 
-name: default
+name: azcyg
 
 data:
-  grid_name: "CIFIST"
-  files: ["data.hdf5"]
-  instruments : ["DCT_DeVeny"]
+  grid_name: "KURUCZ"
+  files: ["/home/norris/SOFTWARE/Starfish/RSG/AZCYG/data/azcyg.txt"]
+  instruments : ["SPEX_SXD"]
 
 outdir : output/
 
@@ -13,13 +13,13 @@ plotdir : plots/
 
 # The parameters defining your raw spectral library live here.
 grid:
-  raw_path: "../libraries/raw/CIFIST/"
-  hdf5_path: "grid.hdf5"
-  parname: ["temp", "logg"]
-  key_name: "t{0:.0f}g{1:.1f}" # Specifies how the params are stored
+  raw_path: "/home/norris/SOFTWARE/Starfish/libraries/raw/KURUCZ/"
+  hdf5_path: "/home/norris/SOFTWARE/Starfish/libraries/raw/ATLAS_irtf.hdf5"
+  parname: ["temp", "logg","Z"]
+  key_name: "t{0:.0f}g{1:.1f}z{1:.1f}" # Specifies how the params are stored
   # in the HDF5 file
-  parrange: [[2300, 3700], [4.0, 5.5]]
-  wl_range: [6300, 6360]
+  parrange: [[3500.0, 4250.0], [0, 1.5], [-2.5, 0.5]]
+  wl_range: [7000.0, 7500.0]
   buffer: 50. # AA
 
 PCA:

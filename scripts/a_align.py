@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3 
 
 import argparse
 parser = argparse.ArgumentParser(prog="single.py", description="Run Starfish fitting model in parallel.")

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3 
 
 import argparse
 parser = argparse.ArgumentParser(prog="region_optimize.py", description="Find the kernel parameters for Gaussian region zones.")

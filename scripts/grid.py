@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3 
 
 import argparse
 parser = argparse.ArgumentParser(description="Interact with the raw" \

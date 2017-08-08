@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3 
 
 # All of the argument parsing is done in the `parallel.py` module.
 

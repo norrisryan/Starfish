@@ -185,10 +185,12 @@ class Order:
         spectrum_id, self.order_key = self.id
         # Make sure these are ints
         self.spectrum_id = int(spectrum_id)
-
+        print("spec: ",DataSpectra[self.spectrum_id])
         self.instrument = Instruments[self.spectrum_id]
         self.dataSpectrum = DataSpectra[self.spectrum_id]
         self.wl = self.dataSpectrum.wls[self.order_key]
+        print("order_key: ",self.order_key)
+        print("wl: ", self.wl)
         self.fl = self.dataSpectrum.fls[self.order_key]
         self.sigma = self.dataSpectrum.sigmas[self.order_key]
         self.ndata = len(self.wl)
@@ -335,10 +337,10 @@ class Order:
             mark = lambda val: '>' if val < 0 else '.'
 
             print("Covariance matrix eigenvalues:")
-            print(*["{: >6} {:{fill}>20.3e}".format(i, evals_CC[i], 
+            print(*["{: >6} {:{fill}>20.3e}".format(i, evals_CC[i],
                                                     fill=mark(evals_CC[i])) for i in range(10)], sep='\n')
             print('{: >15}'.format('...'))
-            print(*["{: >6} {:{fill}>20.3e}".format(n_tot-10+i, evals_CC[-10+i], 
+            print(*["{: >6} {:{fill}>20.3e}".format(n_tot-10+i, evals_CC[-10+i],
                                                    fill=mark(evals_CC[-10+i])) for i in range(10)], sep='\n')
         print('{:-^60}'.format('-'))
 
@@ -710,7 +712,7 @@ class SampleThetaPhi(Order):
 
             # sigAmp must be positive (this is effectively a prior)
             # See https://github.com/iancze/Starfish/issues/26
-            if not (0.0 < sigAmp): 
+            if not (0.0 < sigAmp):
                 self.lnprob_last = self.lnprob
                 lnp = -np.inf
                 self.logger.debug("sigAmp was negative, returning -np.inf")

@@ -146,6 +146,7 @@ class RawGridInterface:
         '''
         assert len(parameters) == len(self.param_names)
 
+
         for param, ppoints in zip(parameters, self.points):
             if param not in ppoints:
                 raise C.GridError("{} not in the grid points {}".format(param, ppoints))
@@ -307,6 +308,83 @@ class PHOENIXGridInterfaceNoAlpha(PHOENIXGridInterface):
             self.rname = base + "Z{2:}/lte{0:0>5.0f}-{1:.2f}{2:}" \
                          ".PHOENIX-ACES-AGSS-COND-2011-HiRes.fits"
 
+class KuruczGridInterfaceRN(RawGridInterface):
+    '''Kurucz grid interface.
+
+    Spectra are stored in ``f_nu`` in a filename like
+    ``T03500G00m25ap00k2v070z1i00.fits``, ``ap00`` means zero alpha enhancement,
+    and ``k2`` is the microturbulence, while ``z1`` is the macroturbulence.
+    These particular values are roughly the ones appropriate for the Sun.
+    '''
+    def __init__(self, air=True, norm=True, wl_range=[10000.0, 10499.0], base=Starfish.grid["raw_path"]):
+        super().__init__(name="KURUCZ",
+            param_names = ["temp", "logg", "Z"],
+            points=[np.arange(3500, 4500, 250),
+                    np.arange(0.0, 1.0, 0.5),
+                    np.array([-0.5, 0.0, 0.5])],
+                     air=air, wl_range=wl_range, base=base)
+
+        self.par_dicts = [None, None, {-2.5:"M25", -2.0:"M20", -1.5:"M15", -1.0:"M10", -0.5:"M05", 0.0:"P00", 0.5:"P05"}]
+
+        self.norm = norm #Convert to f_lam and average to 1, or leave in f_nu?
+        self.rname = base + "T_{0:0>5.0f}/T{0:0>5.0f}G{1:0>2.0f}{2}V000K2SNWNVR20F.ASC"
+        self.wl_full = np.load(base + "kurucz_raw_wl.npy")
+        self.ind = (self.wl_full >= self.wl_range[0]) & (self.wl_full <= self.wl_range[1])
+        self.wl = self.wl_full[self.ind]
+
+    def load_flux(self, parameters, norm=True):
+        '''
+        Load a the flux and header information.
+
+        :param parameters: stellar parameters
+        :type parameters: dict
+
+        :raises C.GridError: if the file cannot be found on disk.
+
+        :returns: tuple (flux_array, header_dict)
+
+        '''
+        self.check_params(parameters)
+
+        str_parameters = []
+        for param, par_dict in zip(parameters, self.par_dicts):
+            if par_dict is None:
+                str_parameters.append(param)
+            else:
+                str_parameters.append(par_dict[param])
+
+        #Multiply logg by 10
+        str_parameters[1] *= 10
+
+        fname = self.rname.format(*str_parameters)
+        print(fname)
+
+        #Still need to check that file is in the grid, otherwise raise a C.GridError
+        #Read all metadata in from the FITS header, and append to spectrum
+        try:
+            f=np.loadtxt(fname)
+            #flux_file = fits.open(fname)
+            #f = flux_file[0].data
+            #hdr = flux_file[0].header
+            #flux_file.close()
+        except OSError:
+            raise C.GridError("{} is not on disk.".format(fname))
+
+        #We cannot normalize the spectra, since we don't have a full wl range, so instead we set the average
+        #flux to be 1
+        #Also, we should convert from f_nu to f_lam
+        if self.norm:
+            f *= C.c_ang / self.wl_full**2 #Convert from f_nu to f_lambda
+            f /= np.average(f) #divide by the mean flux, so avg(f) = 1
+        #Add temp, logg, Z, norm to the metadata
+        header = {}
+        header["norm"] = self.norm
+        header["air"] = self.air
+        #Keep the relevant keywords
+        #for key, value in hdr.items():
+        #    header[key] = value
+
+        return (f[self.ind], header)
 
 class KuruczGridInterface(RawGridInterface):
     '''Kurucz grid interface.
@@ -493,7 +571,6 @@ class CIFISTGridInterface(RawGridInterface):
         wl_dict = create_log_lam_grid(dv=0.08, wl_start=self.wl_range[0], wl_end=self.wl_range[1])
         self.wl = wl_dict['wl']
 
-        print(self.wl)
 
 
     def load_flux(self, parameters):
@@ -791,6 +868,7 @@ class HDF5Creator:
 
 
             # The PHOENIX spectra are stored as float32, and so we do the same here.
+            print("NAME: ", self.key_name.format(*param))
             flux = self.hdf5["flux"].create_dataset(self.key_name.format(*param),
                 shape=(len(fl),), dtype="f", compression='gzip',
                 compression_opts=9)

@@ -266,10 +266,10 @@ class PCAGrid:
 
         # determine the indices
         wl_min, wl_max = np.min(wl_data), np.max(wl_data)
-
+        print("wl_min: ",wl_min," wl_max: ",wl_max)
         wl_min -= buffer
         wl_max += buffer
-
+        print("buffer: ", buffer)
         ind = determine_chunk_log(self.wl, wl_min, wl_max)
 
         assert (min(self.wl[ind]) <= wl_min) and (max(self.wl[ind]) >= wl_max),\
@@ -379,6 +379,7 @@ class Emulator:
         '''
         Possibly truncate the wl grid in response to some data. Also truncate eigenspectra, and flux_mean and flux_std.
         '''
+        print("wl_data: ",wl_data)
         self.pca.determine_chunk_log(wl_data)
         self.wl = self.pca.wl
 
